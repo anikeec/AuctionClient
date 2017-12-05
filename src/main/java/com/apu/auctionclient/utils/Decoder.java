@@ -6,13 +6,13 @@
 package com.apu.auctionclient.utils;
 
 import com.apu.auctionapi.AuctionQuery;
-import com.apu.auctionapi.NewRateQuery;
-import com.apu.auctionapi.NotifyQuery;
-import com.apu.auctionapi.PingQuery;
-import com.apu.auctionapi.PollAnswerQuery;
-import com.apu.auctionapi.PollQuery;
+import com.apu.auctionapi.query.NewRateQuery;
+import com.apu.auctionapi.query.NotifyQuery;
+import com.apu.auctionapi.query.PingQuery;
+import com.apu.auctionapi.answer.PollAnswerQuery;
+import com.apu.auctionapi.query.PollQuery;
 import com.apu.auctionapi.QueryType;
-import com.apu.auctionapi.RegistrationQuery;
+import com.apu.auctionapi.query.RegistrationQuery;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

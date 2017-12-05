@@ -6,9 +6,10 @@
 package com.apu.auctionclient.client;
 
 import com.apu.auctionapi.AuctionQuery;
-import com.apu.auctionapi.RegistrationQuery;
+import com.apu.auctionapi.query.RegistrationQuery;
 import com.apu.auctionclient.controller.Controller;
 import com.apu.auctionclient.entity.User;
+import com.apu.auctionclient.utils.Coder;
 import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,7 +19,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -33,7 +33,6 @@ public class Client {
     private ConnectionHandlerPool handlerPool;
     private int backlog;
     private String host; 
-    private Date date = new Date();
     private Timer timer;    
 
     public Client(String host, int port, int backlog) throws IOException {            
@@ -69,9 +68,8 @@ public class Client {
                 Controller controller = Controller.getInstance();
                 controller.setUser(user);
 
-                query = new RegistrationQuery(packetId, userId, date.toString());
-                Gson gson = new Gson();
-                line = gson.toJson(query) + "\r\n";
+                query = new RegistrationQuery(packetId, userId);
+                line = Coder.getInstance().code(query);
                 System.out.println("send:" + line);
                 out.write(line); 
                 out.flush();
@@ -80,25 +78,21 @@ public class Client {
                 this.timer = new Timer(true);//run as daemon
                 timer.scheduleAtFixedRate(pollingTask, 1000, 2000);
 
-                while(true) {
+                while(!clientSocket.isClosed()) {
                     line = in.readLine(); // ожидаем пока клиент пришлет что-то
-    //                if(line == null) {                    
-    //                    break;
-    //                }
                     if(line != null) {
                         System.out.println(line);                     
                         controller.handle(line);  
                     }
                 }  
-
-    //            clientSocket.close();
             } catch (Exception ex) {
                 Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);                       
             } finally {
                 timer.cancel(); 
                 if(os != null)  os.close();
                 if(is != null)  is.close();
-                clientSocket.close();
+                System.out.println("Client closed"); 
+                clientSocket.close();                
             }
         } catch (IOException ex) {
             Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);    

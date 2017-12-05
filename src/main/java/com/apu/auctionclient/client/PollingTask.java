@@ -6,11 +6,10 @@
 package com.apu.auctionclient.client;
 
 import com.apu.auctionapi.AuctionQuery;
-import com.apu.auctionapi.PollQuery;
+import com.apu.auctionapi.query.PollQuery;
 import com.apu.auctionclient.entity.User;
-import com.google.gson.Gson;
+import com.apu.auctionclient.utils.Coder;
 import java.io.IOException;
-import java.util.Date;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,10 +30,8 @@ public class PollingTask extends TimerTask {
 
     @Override
     public void run() {        
-        Date date = new Date();
-        AuctionQuery query = new PollQuery(packetId, user.getUserId(), date.toString());
-        Gson gson = new Gson();
-        String line = gson.toJson(query) + "\r\n";
+        AuctionQuery query = new PollQuery(packetId, user.getUserId());
+        String line = Coder.getInstance().code(query);
         System.out.println("send:" + line);
         try { 
             if(user.getOut() == null) {

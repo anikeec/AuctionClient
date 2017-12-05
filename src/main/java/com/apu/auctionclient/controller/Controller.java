@@ -5,12 +5,12 @@
  */
 package com.apu.auctionclient.controller;
 
-import com.apu.auctionapi.AnswerQuery;
+import com.apu.auctionapi.answer.AnswerQuery;
 import com.apu.auctionapi.AuctionQuery;
-import com.apu.auctionapi.DisconnectQuery;
-import com.apu.auctionapi.PingQuery;
-import com.apu.auctionapi.PollAnswerQuery;
-import com.apu.auctionapi.PollQuery;
+import com.apu.auctionapi.query.DisconnectQuery;
+import com.apu.auctionapi.query.PingQuery;
+import com.apu.auctionapi.answer.PollAnswerQuery;
+import com.apu.auctionapi.query.PollQuery;
 import com.apu.auctionclient.entity.User;
 import com.apu.auctionclient.utils.Coder;
 import com.apu.auctionclient.utils.Decoder;

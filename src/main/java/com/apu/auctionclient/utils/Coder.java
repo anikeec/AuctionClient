@@ -6,13 +6,12 @@
 package com.apu.auctionclient.utils;
 
 import com.apu.auctionapi.AuctionQuery;
-import com.apu.auctionapi.DisconnectQuery;
-import com.apu.auctionapi.NewRateQuery;
-import com.apu.auctionapi.PingQuery;
-import com.apu.auctionapi.PollQuery;
-import com.apu.auctionapi.RegistrationQuery;
+import com.apu.auctionapi.query.DisconnectQuery;
+import com.apu.auctionapi.query.NewRateQuery;
+import com.apu.auctionapi.query.PingQuery;
+import com.apu.auctionapi.query.PollQuery;
+import com.apu.auctionapi.query.RegistrationQuery;
 import com.google.gson.Gson;
-import java.util.Date;
 
 /**
  *
@@ -22,7 +21,6 @@ public class Coder {
 
     private Gson gson = new Gson();
     private static Coder instance;
-    private Date date = new Date();
     
     private Coder() {
     }
@@ -36,8 +34,10 @@ public class Coder {
     public String code(AuctionQuery object) {
         String ret = null;
 
-        if(object != null)
-            ret = gson.toJson(object) + "\r\n";
+        if(object == null)  
+            return ret;
+        object.setTime(Time.getTime()); 
+        ret = gson.toJson(object) + "\r\n";
         
 //        if(object instanceof DisconnectQuery) {
 //            ret = code((DisconnectQuery)object);
@@ -87,10 +87,4 @@ public class Coder {
         return ret;
     }
     
-    public static void main(String[] args) {
-        String time = Coder.getInstance().date.toString();
-        PingQuery query = new PingQuery(1, 2, time);
-        String str = Coder.getInstance().code(query);
-        System.out.println(str);
-    }
 }
