@@ -19,6 +19,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,6 +34,7 @@ public class Client {
     private int backlog;
     private String host; 
     private Date date = new Date();
+    private Timer timer;    
 
     public Client(String host, int port, int backlog) throws IOException {            
             this.backlog = backlog;
@@ -42,50 +45,63 @@ public class Client {
     public void start() throws IOException {
 //            handlerPool = new ConnectionHandlerPool(backlog);
             System.out.println("Client started");         
-            int usedId = 0;
-//            while (true) {
-                System.out.println("Try to connect");
-                handleSocket(usedId);               
-//            }
+            int usedId = 1;
+            System.out.println("Try to connect");
+            handleSocket(usedId);               
     }
     
     private void handleSocket(int userId) {
+        Long packetId = (long)0;
+        InputStream is = null;
+        OutputStream os = null;
         try {
-            // do anything you need
-            InputStream is = clientSocket.getInputStream();
-            OutputStream os = clientSocket.getOutputStream();
-            BufferedReader in = new BufferedReader(new InputStreamReader(is));
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(os));
-            String line = null;
-            AuctionQuery query;
-            long packetId = 0;
-            
-            User user = new User(userId, clientSocket, in, out);
-            
-            Controller controller = Controller.getInstance();
-            controller.setUser(user);
-            
-            Thread.sleep(500);
-            
-            query = new RegistrationQuery(packetId, userId, date.toString());
-            Gson gson = new Gson();
-            line = gson.toJson(query) + "\r\n";
-            System.out.println("send:" + line);
-            out.write(line); 
-            out.flush();
-            
-            while(true) {
-                line = in.readLine(); // ожидаем пока клиент пришлет что-то
-                if(line == null)    break;
-                System.out.println(line);                
-                controller.handle(line);                 
-//                break;
-            } 
-            os.close();
-            is.close();
-            clientSocket.close();
-        } catch (Exception ex) {
-            Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);
+            try {
+                // do anything you need
+                is = clientSocket.getInputStream();
+                os = clientSocket.getOutputStream();
+                BufferedReader in = new BufferedReader(new InputStreamReader(is));
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(os));
+                String line = null;
+                AuctionQuery query;
+
+                User user = new User(userId, clientSocket, in, out);
+
+                Controller controller = Controller.getInstance();
+                controller.setUser(user);
+
+                query = new RegistrationQuery(packetId, userId, date.toString());
+                Gson gson = new Gson();
+                line = gson.toJson(query) + "\r\n";
+                System.out.println("send:" + line);
+                out.write(line); 
+                out.flush();
+
+                TimerTask pollingTask = new PollingTask(user, packetId);
+                this.timer = new Timer(true);//run as daemon
+                timer.scheduleAtFixedRate(pollingTask, 1000, 2000);
+
+                while(true) {
+                    line = in.readLine(); // ожидаем пока клиент пришлет что-то
+    //                if(line == null) {                    
+    //                    break;
+    //                }
+                    if(line != null) {
+                        System.out.println(line);                     
+                        controller.handle(line);  
+                    }
+                }  
+
+    //            clientSocket.close();
+            } catch (Exception ex) {
+                Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);                       
+            } finally {
+                timer.cancel(); 
+                if(os != null)  os.close();
+                if(is != null)  is.close();
+                clientSocket.close();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);    
         }
     }
 

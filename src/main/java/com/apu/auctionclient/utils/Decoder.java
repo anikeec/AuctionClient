@@ -9,6 +9,7 @@ import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionapi.NewRateQuery;
 import com.apu.auctionapi.NotifyQuery;
 import com.apu.auctionapi.PingQuery;
+import com.apu.auctionapi.PollAnswerQuery;
 import com.apu.auctionapi.PollQuery;
 import com.apu.auctionapi.QueryType;
 import com.apu.auctionapi.RegistrationQuery;
@@ -55,6 +56,10 @@ public class Decoder {
         throw new Exception("Method has not ready yet");        
     }
     
+    private void decode(PollAnswerQuery result)  throws Exception {
+         
+    }
+    
     public AuctionQuery decode(String query) throws Exception {
         this.query = query;       
         
@@ -75,6 +80,9 @@ public class Decoder {
         } else if(queryType.equals(QueryType.PING.toString())) {
             result = new PingQuery(packetId, userId, time);
             Decoder.this.decode((PingQuery)result);
+        } else if(queryType.equals(QueryType.POLL_ANSWER.toString())) {
+            result = new PollAnswerQuery(packetId, userId, time);
+            Decoder.this.decode((PollAnswerQuery)result);
         } else if(queryType.equals(QueryType.POLL.toString())) {
             Decoder.this.decode((PollQuery)result);
         } else if(queryType.equals(QueryType.REGISTRATION.toString())) {

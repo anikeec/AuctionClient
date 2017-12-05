@@ -9,6 +9,7 @@ import com.apu.auctionapi.AnswerQuery;
 import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionapi.DisconnectQuery;
 import com.apu.auctionapi.PingQuery;
+import com.apu.auctionapi.PollAnswerQuery;
 import com.apu.auctionapi.PollQuery;
 import com.apu.auctionclient.entity.User;
 import com.apu.auctionclient.utils.Coder;
@@ -56,6 +57,8 @@ public class Controller {
             handle((DisconnectQuery)query);
         } else if(query instanceof PingQuery) { 
             handle((PingQuery)query);
+        } else if(query instanceof PollAnswerQuery) { 
+            handle((PollAnswerQuery)query);
         } else {
             
         }
@@ -69,7 +72,7 @@ public class Controller {
     public void handle(DisconnectQuery query) {
         System.out.println("Disconnect query to controller");
         
-    }    
+    }  
     
     public void handle(PingQuery query) throws IOException {
         System.out.println("Ping query to controller");
@@ -85,6 +88,11 @@ public class Controller {
     
     public void handle(PollQuery query) {
         
-    }   
+    } 
+    
+    public void handle(PollAnswerQuery query) {
+        System.out.println("Poll answer query to controller");
+        
+    }
     
 }
