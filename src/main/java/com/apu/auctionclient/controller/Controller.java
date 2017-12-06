@@ -10,6 +10,9 @@ import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionapi.query.DisconnectQuery;
 import com.apu.auctionapi.query.PingQuery;
 import com.apu.auctionapi.answer.PollAnswerQuery;
+import com.apu.auctionapi.query.RegistrationQuery;
+import com.apu.auctionclient.client.Client;
+import com.apu.auctionclient.client.ClientState;
 import com.apu.auctionclient.entity.User;
 import com.apu.auctionclient.utils.Coder;
 import com.apu.auctionclient.utils.Decoder;
@@ -29,6 +32,8 @@ public class Controller {
     private User user;
     private BlockingQueue<AuctionQuery> queriesQueue;
     private BlockingQueue<AuctionQuery> sendedQueriesQueue;
+    
+    private int truePacketsValue = 0;
 
     private static Controller instance;
     
@@ -58,16 +63,15 @@ public class Controller {
     }
     
     public void handle(String queryStr) throws IOException, Exception {
-        AuctionQuery query = decoder.decode(queryStr);
+        AuctionQuery query = decoder.decode(queryStr);      
+        AuctionQuery srcQuery = getLastSendedQuery();
         
-        AuctionQuery srcQuery;
-        srcQuery = sendedQueriesQueue.peek();
-        if(srcQuery != null) {            
-            sendedQueriesQueue.remove();
-        }
-                
         if(query instanceof AnswerQuery) {
-            handle((AnswerQuery)query);
+            if(srcQuery instanceof RegistrationQuery) {
+                handle((RegistrationQuery)srcQuery, (AnswerQuery)query);
+            } else {
+                handle((AnswerQuery)query);
+            }
         } else if(query instanceof DisconnectQuery) {
             handle((DisconnectQuery)query);
         } else if(query instanceof PingQuery) { 
@@ -76,7 +80,23 @@ public class Controller {
             handle((PollAnswerQuery)query);
         } else {
             
+        }        
+        
+        if(srcQuery != null) {
+            if(query.getPacketId() == srcQuery.getPacketId()) {
+                truePacketsValue++;
+            }
+            System.out.println(truePacketsValue);
+            removeLastSendedQuery();
         }
+    }
+    
+    private AuctionQuery getLastSendedQuery() {
+        return sendedQueriesQueue.peek();
+    }
+    
+    private void removeLastSendedQuery() {
+        sendedQueriesQueue.remove();
     }
     
     public void handle(AnswerQuery query) {
@@ -101,6 +121,11 @@ public class Controller {
     public void handle(PollAnswerQuery query) {
         System.out.println("Poll answer query to controller");
         
+    }
+    
+    public void handle(RegistrationQuery srcQuery, AnswerQuery answerQuery) {
+        System.out.println("Ask for registration query received");
+        Client.setClientState(ClientState.CONNECTED);        
     }
     
 }

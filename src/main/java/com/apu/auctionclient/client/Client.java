@@ -18,7 +18,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
@@ -30,19 +29,24 @@ import java.util.logging.Logger;
  */
 public class Client {
     private Socket clientSocket;
-    private ConnectionHandlerPool handlerPool;
-    private int backlog;
     private String host; 
-    private Timer timer;    
+    private Timer timer; 
+    private static ClientState clientState = ClientState.NOT_CONNECTED;
 
-    public Client(String host, int port, int backlog) throws IOException {            
-            this.backlog = backlog;
+    public Client(String host, int port) throws IOException {            
             this.host = host;
             clientSocket = new Socket(host, port);
     }
 
+    public static synchronized ClientState getClientState() {
+        return clientState;
+    }
+
+    public static synchronized void setClientState(ClientState state) {
+        clientState = state;
+    }   
+
     public void start() throws IOException {
-//            handlerPool = new ConnectionHandlerPool(backlog);
             System.out.println("Client started");         
             int usedId = 1;
             System.out.println("Try to connect");
@@ -77,26 +81,35 @@ public class Client {
                 new Thread(new SendingTask(queriesQueue, 
                                             sendedQueriesQueue, 
                                             clientSocket))
-                                            .start();                
+                                            .start(); 
+                
+                new Thread(new ReceivingTask(sendedQueriesQueue, 
+                                            clientSocket))
+                                            .start();
+                
 
                 AuctionQuery query = new RegistrationQuery(userId);
                 queriesQueue.add(query);
+                
+                while(getClientState() == ClientState.NOT_CONNECTED) {};
 
                 PollingTask pollingTask = new PollingTask(user);
                 this.timer = new Timer(true);//run as daemon
                 pollingTask.setQueriesQueue(queriesQueue);
-                timer.scheduleAtFixedRate(pollingTask, 1000, 2000);
+                timer.scheduleAtFixedRate(pollingTask, 1000, 1000);
+                
+                while(true) {}
 
-                String line = null;
-                while(!clientSocket.isClosed()) {
-                    line = in.readLine(); // ожидаем пока клиент пришлет что-то
-                    if(line != null) {
-                        System.out.println(line);                     
-                        controller.handle(line);  
-                    }
-                }  
+//                String line = null;
+//                while(!clientSocket.isClosed()) {
+//                    line = in.readLine(); // ожидаем пока клиент пришлет что-то
+//                    if(line != null) {
+//                        System.out.println(line);                     
+//                        controller.handle(line);  
+//                    }
+//                }  
             } catch (Exception ex) {
-                Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);                       
+                Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);                       
             } finally {
                 timer.cancel(); 
                 if(os != null)  os.close();
@@ -105,7 +118,7 @@ public class Client {
                 clientSocket.close();                
             }
         } catch (IOException ex) {
-            Logger.getLogger(ConnectionHandler.class.getName()).log(Level.SEVERE, null, ex);    
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);    
         }
     }
 

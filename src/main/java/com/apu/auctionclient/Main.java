@@ -15,14 +15,13 @@ import java.util.logging.Logger;
  * @author apu
  */
 public class Main {
-    private static final int CONNECTIONS_MAX = 10;
     private static final int CONNECTION_PORT = 5050;
     private static final String CONNECTION_HOST = "localhost";
     static Client client;
     
     public static void main(String[] args) {
         try {
-            client = new Client(CONNECTION_HOST, CONNECTION_PORT, CONNECTIONS_MAX);
+            client = new Client(CONNECTION_HOST, CONNECTION_PORT);
             client.start();
         } catch (IOException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
