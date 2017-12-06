@@ -12,6 +12,7 @@ import com.apu.auctionapi.query.PingQuery;
 import com.apu.auctionapi.answer.PollAnswerQuery;
 import com.apu.auctionapi.query.PollQuery;
 import com.apu.auctionapi.QueryType;
+import com.apu.auctionapi.answer.AnswerQuery;
 import com.apu.auctionapi.query.RegistrationQuery;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -27,6 +28,9 @@ public class Decoder {
     private final JsonParser parser = new JsonParser();
     private static Decoder instance;
     
+    private JsonElement jsonElement;
+    private JsonObject rootObject;
+    
     private Decoder() {
     }
     
@@ -34,6 +38,12 @@ public class Decoder {
         if(instance == null)
             instance = new Decoder();
         return instance;
+    }
+    
+    private void decode(AnswerQuery result) throws Exception {
+        System.out.println("AnswerQuery packet");
+        String str = rootObject.get("message").getAsString();
+        result.setMessage(str);
     }
     
     private void decode(RegistrationQuery result) throws Exception {
@@ -63,8 +73,8 @@ public class Decoder {
     public AuctionQuery decode(String query) throws Exception {
         this.query = query;       
         
-        JsonElement jsonElement = parser.parse(query);
-        JsonObject rootObject = jsonElement.getAsJsonObject();
+        jsonElement = parser.parse(query);
+        rootObject = jsonElement.getAsJsonObject();
 
         String queryType = rootObject.get("queryType").getAsString();
         String time = rootObject.get("time").getAsString();
@@ -72,7 +82,10 @@ public class Decoder {
         Integer userId = rootObject.get("userId").getAsInt();        
         
         AuctionQuery result = null;
-        if(queryType.equals(QueryType.NEW_RATE.toString())) {
+        if(queryType.equals(QueryType.ANSWER.toString())) {
+            result = new AnswerQuery(packetId, userId, time, "");
+            Decoder.this.decode((AnswerQuery)result);
+        } else if(queryType.equals(QueryType.NEW_RATE.toString())) {
             result = new NewRateQuery(packetId, userId, time);
             Decoder.this.decode((NewRateQuery)result);
         } else if(queryType.equals(QueryType.NOTIFY.toString())) {

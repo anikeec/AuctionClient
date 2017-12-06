@@ -10,12 +10,12 @@ import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionapi.query.DisconnectQuery;
 import com.apu.auctionapi.query.PingQuery;
 import com.apu.auctionapi.answer.PollAnswerQuery;
-import com.apu.auctionapi.query.PollQuery;
 import com.apu.auctionclient.entity.User;
 import com.apu.auctionclient.utils.Coder;
 import com.apu.auctionclient.utils.Decoder;
+import com.apu.auctionclient.utils.Time;
 import java.io.IOException;
-import java.util.Date;
+import java.util.concurrent.BlockingQueue;
 
 /**
  *
@@ -25,9 +25,10 @@ public class Controller {
     
     private final Decoder decoder = Decoder.getInstance();
     private final Coder coder = Coder.getInstance();
-    private Date date = null;
     
     private User user;
+    private BlockingQueue<AuctionQuery> queriesQueue;
+    private BlockingQueue<AuctionQuery> sendedQueriesQueue;
 
     private static Controller instance;
     
@@ -47,9 +48,23 @@ public class Controller {
     public void setUser(User user) {
         this.user = user;
     }
+
+    public void setQueriesQueue(BlockingQueue<AuctionQuery> queriesQueue) {
+        this.queriesQueue = queriesQueue;
+    }
+    
+    public void setSendedQueriesQueue(BlockingQueue<AuctionQuery> sendedQueriesQueue) {
+        this.sendedQueriesQueue = sendedQueriesQueue;
+    }
     
     public void handle(String queryStr) throws IOException, Exception {
         AuctionQuery query = decoder.decode(queryStr);
+        
+        AuctionQuery srcQuery;
+        srcQuery = sendedQueriesQueue.peek();
+        if(srcQuery != null) {            
+            sendedQueriesQueue.remove();
+        }
                 
         if(query instanceof AnswerQuery) {
             handle((AnswerQuery)query);
@@ -77,18 +92,11 @@ public class Controller {
     public void handle(PingQuery query) throws IOException {
         System.out.println("Ping query to controller");
         
-        date = new Date();
-        String time = date.toString();
+        String time = Time.getTime();
         AnswerQuery answer = 
             new AnswerQuery(query.getPacketId(), user.getUserId(), time, "Ping ask");
-        String str = coder.code(answer);
-        getUser().getOut().write(str);
-        getUser().getOut().flush();
+        queriesQueue.add(answer);
     }
-    
-    public void handle(PollQuery query) {
-        
-    } 
     
     public void handle(PollAnswerQuery query) {
         System.out.println("Poll answer query to controller");

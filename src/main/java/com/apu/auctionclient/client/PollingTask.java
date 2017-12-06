@@ -8,11 +8,8 @@ package com.apu.auctionclient.client;
 import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionapi.query.PollQuery;
 import com.apu.auctionclient.entity.User;
-import com.apu.auctionclient.utils.Coder;
-import java.io.IOException;
 import java.util.TimerTask;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.BlockingQueue;
 
 /**
  *
@@ -21,28 +18,20 @@ import java.util.logging.Logger;
 public class PollingTask extends TimerTask {
     
     private User user;
-    private Long packetId;
+    private BlockingQueue<AuctionQuery> queriesQueue;
 
-    public PollingTask(User user, Long packetId) {
+    public PollingTask(User user) {
         this.user = user;
-        this.packetId = packetId;
+    }
+    
+    public void setQueriesQueue(BlockingQueue<AuctionQuery> queriesQueue) {
+        this.queriesQueue = queriesQueue;
     }
 
     @Override
     public void run() {        
-        AuctionQuery query = new PollQuery(packetId, user.getUserId());
-        String line = Coder.getInstance().code(query);
-        System.out.println("send:" + line);
-        try { 
-            if(user.getOut() == null) {
-                this.cancel();
-            }
-            user.getOut().write(line);
-            user.getOut().flush();
-            packetId++;
-        } catch (IOException ex) {
-            Logger.getLogger(PollingTask.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        AuctionQuery query = new PollQuery(user.getUserId());        
+        queriesQueue.add(query);
     }   
     
     

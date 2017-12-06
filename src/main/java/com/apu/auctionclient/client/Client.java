@@ -9,8 +9,6 @@ import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionapi.query.RegistrationQuery;
 import com.apu.auctionclient.controller.Controller;
 import com.apu.auctionclient.entity.User;
-import com.apu.auctionclient.utils.Coder;
-import com.google.gson.Gson;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -21,6 +19,8 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,6 +50,7 @@ public class Client {
     }
     
     private void handleSocket(int userId) {
+        final int QUEUE_SIZE = 10;
         Long packetId = (long)0;
         InputStream is = null;
         OutputStream os = null;
@@ -59,25 +60,34 @@ public class Client {
                 is = clientSocket.getInputStream();
                 os = clientSocket.getOutputStream();
                 BufferedReader in = new BufferedReader(new InputStreamReader(is));
-                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(os));
-                String line = null;
-                AuctionQuery query;
+                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(os));                
 
                 User user = new User(userId, clientSocket, in, out);
 
+                BlockingQueue<AuctionQuery> queriesQueue = 
+                            new ArrayBlockingQueue<>(QUEUE_SIZE);
+                BlockingQueue<AuctionQuery> sendedQueriesQueue = 
+                            new ArrayBlockingQueue<>(QUEUE_SIZE);
+                
                 Controller controller = Controller.getInstance();
                 controller.setUser(user);
+                controller.setQueriesQueue(queriesQueue);
+                controller.setSendedQueriesQueue(sendedQueriesQueue);
+                
+                new Thread(new SendingTask(queriesQueue, 
+                                            sendedQueriesQueue, 
+                                            clientSocket))
+                                            .start();                
 
-                query = new RegistrationQuery(packetId, userId);
-                line = Coder.getInstance().code(query);
-                System.out.println("send:" + line);
-                out.write(line); 
-                out.flush();
+                AuctionQuery query = new RegistrationQuery(userId);
+                queriesQueue.add(query);
 
-                TimerTask pollingTask = new PollingTask(user, packetId);
+                PollingTask pollingTask = new PollingTask(user);
                 this.timer = new Timer(true);//run as daemon
+                pollingTask.setQueriesQueue(queriesQueue);
                 timer.scheduleAtFixedRate(pollingTask, 1000, 2000);
 
+                String line = null;
                 while(!clientSocket.isClosed()) {
                     line = in.readLine(); // ожидаем пока клиент пришлет что-то
                     if(line != null) {
