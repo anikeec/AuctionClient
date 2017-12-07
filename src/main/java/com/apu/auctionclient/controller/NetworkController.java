@@ -14,7 +14,6 @@ import com.apu.auctionapi.query.RegistrationQuery;
 import com.apu.auctionclient.client.Client;
 import com.apu.auctionclient.client.ClientState;
 import com.apu.auctionclient.entity.User;
-import com.apu.auctionclient.utils.Coder;
 import com.apu.auctionclient.utils.Decoder;
 import com.apu.auctionclient.utils.Time;
 import java.io.IOException;
@@ -24,10 +23,9 @@ import java.util.concurrent.BlockingQueue;
  *
  * @author apu
  */
-public class Controller {
+public class NetworkController {
     
     private final Decoder decoder = Decoder.getInstance();
-    private final Coder coder = Coder.getInstance();
     
     private User user;
     private BlockingQueue<AuctionQuery> queriesQueue;
@@ -35,14 +33,14 @@ public class Controller {
     
     private int truePacketsValue = 0;
 
-    private static Controller instance;
+    private static NetworkController instance;
     
-    private Controller() {
+    private NetworkController() {
     }
     
-    public static Controller getInstance() {
+    public static NetworkController getInstance() {
         if(instance == null)
-            instance = new Controller();
+            instance = new NetworkController();
         return instance;
     }
 

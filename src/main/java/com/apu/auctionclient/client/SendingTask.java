@@ -6,6 +6,7 @@
 package com.apu.auctionclient.client;
 
 import com.apu.auctionapi.AuctionQuery;
+import com.apu.auctionclient.entity.Message;
 import com.apu.auctionclient.utils.Coder;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -24,15 +25,18 @@ public class SendingTask implements Runnable {
     
     private final BlockingQueue<AuctionQuery> queriesQueue;
     private final BlockingQueue<AuctionQuery> sendedQueriesQueue;
+    private final BlockingQueue<Message> messagesQueue;
     private final Socket socket;
     private long packetId = 0;
 
     public SendingTask(BlockingQueue<AuctionQuery> queriesQueue, 
-                        BlockingQueue<AuctionQuery> sendedQueriesQueue, 
+                        BlockingQueue<AuctionQuery> sendedQueriesQueue,
+                        BlockingQueue<Message> messagesQueue,
                         Socket socket) {
         this.queriesQueue = queriesQueue;
         this.sendedQueriesQueue = sendedQueriesQueue;
         this.socket = socket;
+        this.messagesQueue = messagesQueue;
     }
 
     @Override
@@ -43,7 +47,8 @@ public class SendingTask implements Runnable {
             os = socket.getOutputStream();
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(os));
             String line;
-            while(true) {
+            while(!socket.isClosed()) {
+                if(Thread.currentThread().isInterrupted())    break;
                 try {
                     query = queriesQueue.take();
                     query.setPacketId(packetId++);
@@ -53,17 +58,18 @@ public class SendingTask implements Runnable {
                     System.out.println("send:" + line);
                     out.write(line);
                     out.flush();                   
-                } catch (IOException ex) {
-                    Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (InterruptedException ex) {
                     Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
+                    throw ex;
                 }
             }
-        } catch (IOException ex) {
+        } catch (InterruptedException | IOException ex) {
             Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
+            messagesQueue.add(new Message("Error"));
         } finally {
-            try {
-                os.close();
+            try {                
+                if(os != null)
+                    os.close();
             } catch (IOException ex) {
                 Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
             }

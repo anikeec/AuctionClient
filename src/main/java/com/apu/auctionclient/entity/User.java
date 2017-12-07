@@ -16,14 +16,10 @@ import java.net.Socket;
 public class User {
     private int userId;
     private Socket socket;
-    private BufferedReader in;
-    private BufferedWriter out;
 
-    public User(int userId, Socket socket, BufferedReader in, BufferedWriter out) {
+    public User(int userId, Socket socket) {
         this.userId = userId;
         this.socket = socket;
-        this.in = in;
-        this.out = out;
     }
 
     public int getUserId() {
@@ -32,15 +28,6 @@ public class User {
 
     public Socket getSocket() {
         return socket;
-    }
-
-    public BufferedReader getIn() {
-        return in;
-    }
-
-    public BufferedWriter getOut() {
-        return out;
-    }
-    
+    }    
     
 }

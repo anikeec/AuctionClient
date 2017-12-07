@@ -6,7 +6,8 @@
 package com.apu.auctionclient.client;
 
 import com.apu.auctionapi.AuctionQuery;
-import com.apu.auctionclient.controller.Controller;
+import com.apu.auctionclient.controller.NetworkController;
+import com.apu.auctionclient.entity.Message;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -26,41 +27,54 @@ import java.util.logging.Logger;
 public class ReceivingTask implements Runnable {
     
     private final BlockingQueue<AuctionQuery> sendedQueriesQueue;
+    private final BlockingQueue<Message> messagesQueue;
     private final Socket socket;
-    private long packetId = 0;
 
     public ReceivingTask(BlockingQueue<AuctionQuery> sendedQueriesQueue, 
+                        BlockingQueue<Message> messagesQueue,
                         Socket socket) {
         this.sendedQueriesQueue = sendedQueriesQueue;
         this.socket = socket;
+        this.messagesQueue = messagesQueue;
     }
 
     @Override
     public void run() {
         InputStream is = null;
-        OutputStream os = null;
-        Controller controller = Controller.getInstance();
+//        OutputStream os = null;
+        NetworkController controller = NetworkController.getInstance();
         try {
             try {
                 is = socket.getInputStream();
-                os = socket.getOutputStream();
-                BufferedReader in = new BufferedReader(new InputStreamReader(is));
-                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(os));
+//                os = socket.getOutputStream();
+//                BufferedReader in = new BufferedReader(new InputStreamReader(is));
+//                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(os));
                 String line = null;
-                while(!socket.isClosed()) {
-                    line = in.readLine(); // ожидаем пока клиент пришлет что-то
+                StringBuilder sb = new StringBuilder();;
+                byte[] bytes = new byte[1024];
+                while(!socket.isClosed()) { 
+                    
+                    while(true) {
+                        if(Thread.currentThread().isInterrupted())    break;
+                        if(is.available() == 0) continue;
+                        int amount = is.read(bytes, 0, 1024);
+                        String str = new String(bytes, 0, amount);
+                        sb.append(str);
+                        if(sb.toString().contains("\r\n"))  break;
+                    }                    
+                    //line = in.readLine(); // ожидаем пока клиент пришлет что-то
+                    line = sb.toString();
+                    sb.delete(0, sb.capacity());
                     if(line != null) {
                         System.out.println(line);
                         controller.handle(line);
                     }
                 }
-            } catch (IOException ex) {
-                Logger.getLogger(ReceivingTask.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception ex) {
                 Logger.getLogger(ReceivingTask.class.getName()).log(Level.SEVERE, null, ex);
-            } finally {
-    //            timer.cancel(); 
-                if(os != null)  os.close();
+                messagesQueue.add(new Message("Error"));
+            } finally { 
+//                if(os != null)  os.close();
                 if(is != null)  is.close();
                 System.out.println("Client closed"); 
                 socket.close();                
