@@ -102,7 +102,7 @@ public class Network implements Runnable {
 
         while(getClientState() == ClientState.NOT_CONNECTED) {};
 
-        PollingTask pollingTask = new PollingTask(user);
+        PollingTask pollingTask = new PollingTask(user, messagesQueue);
         this.timer = new Timer(false);//run not as daemon
         pollingTask.setQueriesQueue(queriesQueue);
         timer.scheduleAtFixedRate(pollingTask, 1000, 1000);
