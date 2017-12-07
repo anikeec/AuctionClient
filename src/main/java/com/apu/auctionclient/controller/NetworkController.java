@@ -27,36 +27,17 @@ public class NetworkController {
     
     private final Decoder decoder = Decoder.getInstance();
     
-    private User user;
-    private BlockingQueue<AuctionQuery> queriesQueue;
-    private BlockingQueue<AuctionQuery> sendedQueriesQueue;
+    private final User user;
+    private final BlockingQueue<AuctionQuery> queriesQueue;
+    private final BlockingQueue<AuctionQuery> sendedQueriesQueue;
     
     private int truePacketsValue = 0;
 
-    private static NetworkController instance;
-    
-    private NetworkController() {
-    }
-    
-    public static NetworkController getInstance() {
-        if(instance == null)
-            instance = new NetworkController();
-        return instance;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
+    public NetworkController(User user, 
+                            BlockingQueue<AuctionQuery> queriesQueue, 
+                            BlockingQueue<AuctionQuery> sendedQueriesQueue) {
         this.user = user;
-    }
-
-    public void setQueriesQueue(BlockingQueue<AuctionQuery> queriesQueue) {
         this.queriesQueue = queriesQueue;
-    }
-    
-    public void setSendedQueriesQueue(BlockingQueue<AuctionQuery> sendedQueriesQueue) {
         this.sendedQueriesQueue = sendedQueriesQueue;
     }
     

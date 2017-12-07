@@ -21,13 +21,16 @@ import java.util.logging.Logger;
  */
 public class ReceivingTask implements Runnable {
     
+    private final NetworkController networkController;
     private final BlockingQueue<AuctionQuery> sendedQueriesQueue;
     private final BlockingQueue<Message> messagesQueue;
     private final Socket socket;
 
-    public ReceivingTask(BlockingQueue<AuctionQuery> sendedQueriesQueue, 
+    public ReceivingTask(NetworkController networkController,
+                        BlockingQueue<AuctionQuery> sendedQueriesQueue, 
                         BlockingQueue<Message> messagesQueue,
                         Socket socket) {
+        this.networkController = networkController;
         this.sendedQueriesQueue = sendedQueriesQueue;
         this.socket = socket;
         this.messagesQueue = messagesQueue;
@@ -36,7 +39,6 @@ public class ReceivingTask implements Runnable {
     @Override
     public void run() {
         InputStream is = null;
-        NetworkController controller = NetworkController.getInstance();
         try {
             try {
                 is = socket.getInputStream();
@@ -59,7 +61,7 @@ public class ReceivingTask implements Runnable {
                         sb.delete(0, sb.capacity());
                         if(line != null) {
                             System.out.println(line);
-                            controller.handle(line);
+                            networkController.handle(line);
                         }
                     }                   
                 }

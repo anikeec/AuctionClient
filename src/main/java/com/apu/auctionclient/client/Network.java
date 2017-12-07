@@ -49,10 +49,8 @@ public class Network implements Runnable {
         sendedQueriesQueue = new ArrayBlockingQueue<>(QUEUE_SIZE);
         messagesQueue = new ArrayBlockingQueue<>(MESSAGE_QUEUE_SIZE);
         
-        NetworkController networkController = NetworkController.getInstance();
-        networkController.setUser(user);
-        networkController.setQueriesQueue(queriesQueue);
-        networkController.setSendedQueriesQueue(sendedQueriesQueue);
+        NetworkController networkController = 
+                new NetworkController(user, queriesQueue, sendedQueriesQueue);
         
         sendingThread = new Thread(new SendingTask(queriesQueue, 
                                                     sendedQueriesQueue,
@@ -60,7 +58,8 @@ public class Network implements Runnable {
                                                     socket));
         sendingThread.start(); 
 
-        receivingThread = new Thread(new ReceivingTask(sendedQueriesQueue,
+        receivingThread = new Thread(new ReceivingTask(networkController,
+                                                        sendedQueriesQueue,
                                                         messagesQueue,
                                                         socket));
         receivingThread.start();
