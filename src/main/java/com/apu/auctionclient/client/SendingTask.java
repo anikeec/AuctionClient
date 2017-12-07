@@ -63,13 +63,18 @@ public class SendingTask implements Runnable {
                     throw ex;
                 }
             }
+            System.out.println("Sending thread. Message - Socket closed");
+            messagesQueue.add(new Message("Socket closed"));            
         } catch (InterruptedException | IOException ex) {
             Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
-            messagesQueue.add(new Message("Error"));
-        } finally {
+            System.out.println("Sending thread. Message - Error.");
+            messagesQueue.add(new Message("Error"));            
+        } finally {            
             try {                
-                if(os != null)
+                if(os != null) {
                     os.close();
+                    System.out.println("Sending thread. Output socket closed");
+                }
             } catch (IOException ex) {
                 Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
             }

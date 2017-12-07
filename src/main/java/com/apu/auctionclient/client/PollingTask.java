@@ -17,7 +17,7 @@ import java.util.concurrent.BlockingQueue;
  */
 public class PollingTask extends TimerTask {
     
-    private User user;
+    private final User user;
     private BlockingQueue<AuctionQuery> queriesQueue;
 
     public PollingTask(User user) {

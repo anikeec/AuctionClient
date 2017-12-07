@@ -50,34 +50,38 @@ public class ReceivingTask implements Runnable {
 //                BufferedReader in = new BufferedReader(new InputStreamReader(is));
 //                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(os));
                 String line = null;
+                String str;
+                int amount;
                 StringBuilder sb = new StringBuilder();;
                 byte[] bytes = new byte[1024];
-                while(!socket.isClosed()) { 
-                    
-                    while(true) {
-                        if(Thread.currentThread().isInterrupted())    break;
+                while(!socket.isClosed()) {                    
+                        if(Thread.currentThread().isInterrupted()) {
+                            System.out.println("Receiving thread. Interrupted.");
+                            break;
+                        }
                         if(is.available() == 0) continue;
-                        int amount = is.read(bytes, 0, 1024);
-                        String str = new String(bytes, 0, amount);
+                        amount = is.read(bytes, 0, 1024);
+                        str = new String(bytes, 0, amount);
                         sb.append(str);
-                        if(sb.toString().contains("\r\n"))  break;
-                    }                    
-                    //line = in.readLine(); // ожидаем пока клиент пришлет что-то
-                    line = sb.toString();
-                    sb.delete(0, sb.capacity());
-                    if(line != null) {
-                        System.out.println(line);
-                        controller.handle(line);
-                    }
+                        if(sb.toString().contains("\r\n")) {
+                            line = sb.toString();
+                            sb.delete(0, sb.capacity());
+                            if(line != null) {
+                                System.out.println(line);
+                                controller.handle(line);
+                            }
+                        }                   
                 }
             } catch (Exception ex) {
                 Logger.getLogger(ReceivingTask.class.getName()).log(Level.SEVERE, null, ex);
-                messagesQueue.add(new Message("Error"));
+                System.out.println("Receiving thread. Message - Error");
+                messagesQueue.add(new Message("Error"));                
             } finally { 
 //                if(os != null)  os.close();
-                if(is != null)  is.close();
-                System.out.println("Client closed"); 
-                socket.close();                
+                if(is != null) { 
+                    is.close();
+                    System.out.println("Receiving thread. Input socket closed");           
+                }                    
             }
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);    

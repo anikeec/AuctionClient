@@ -66,11 +66,25 @@ public class Network implements Runnable {
         receivingThread.start();
     }
     
-    private void stop() throws IOException {
-        timer.cancel();
-        sendingThread.interrupt();
-        receivingThread.interrupt();
-        socket.close();
+    private void stop() throws IOException {        
+        try {
+            timer.cancel();            
+            System.out.println("Network thread. Timer stopped");
+            System.out.println("Network thread. Sending thread try to interrupt");
+            sendingThread.interrupt();
+            System.out.println("Network thread. Receiving thread try to interrupt");
+            receivingThread.interrupt();
+            System.out.println("Network thread. Sending thread wait");
+            sendingThread.join();
+            System.out.println("Network thread. Sending thread interrupted");
+            System.out.println("Network thread. Receiving thread wait");
+            receivingThread.join();
+            System.out.println("Network thread. Receiving thread interrupted");
+            socket.close();
+            System.out.println("Network thread. Socket closed");
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Network.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     @Override
@@ -89,15 +103,17 @@ public class Network implements Runnable {
         while(getClientState() == ClientState.NOT_CONNECTED) {};
 
         PollingTask pollingTask = new PollingTask(user);
-        this.timer = new Timer(true);//run as daemon
+        this.timer = new Timer(false);//run not as daemon
         pollingTask.setQueriesQueue(queriesQueue);
         timer.scheduleAtFixedRate(pollingTask, 1000, 1000);
         
         while(true) {
             try {
                 Message mess = messagesQueue.take();
-                if(mess.getMessage().equals("Error")) {
+                if(mess.getMessage().equals("Error") || 
+                   mess.getMessage().equals("Socket closed")) {
                     stop();
+                    break;
                 }
             } catch (InterruptedException | IOException ex) {
                 Logger.getLogger(Network.class.getName()).log(Level.SEVERE, null, ex);
