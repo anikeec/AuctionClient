@@ -52,7 +52,7 @@ public class SendingTask implements Runnable {
                 try {
                     query = queriesQueue.take();
                     query.setPacketId(packetId++);
-                    while(sendedQueriesQueue.peek() != null){};
+//                    while(sendedQueriesQueue.peek() != null){};
                     sendedQueriesQueue.add(query);
                     line = Coder.getInstance().code(query);
                     System.out.println("send:" + line);
