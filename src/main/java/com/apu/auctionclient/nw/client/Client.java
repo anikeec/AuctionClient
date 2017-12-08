@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.apu.auctionclient.client;
+package com.apu.auctionclient.nw.client;
 
-import com.apu.auctionclient.entity.User;
+import com.apu.auctionclient.nw.Network;
+import com.apu.auctionclient.nw.entity.User;
 import com.apu.auctionclient.utils.Log;
 import java.io.IOException;
 import java.net.Socket;
@@ -23,8 +24,8 @@ public class Client {
     private static ClientState clientState = ClientState.NOT_CONNECTED;
 
     public Client(String host, int port) throws IOException {            
-            this.host = host;
-            clientSocket = new Socket(host, port);
+        this.host = host;
+        clientSocket = new Socket(host, port);
     }
 
     public static synchronized ClientState getClientState() {
@@ -36,20 +37,16 @@ public class Client {
     }   
 
     public void start() throws IOException {
-            log.debug(classname, "Client started");         
-            int usedId = 1;
-            log.debug(classname, "Try to connect");
-            handleSocket(usedId);               
+        log.debug(classname, "Client started");         
+        int usedId = 1;
+        log.debug(classname, "Try to connect");
+        handleSocket(usedId);               
     }
     
     private void handleSocket(int userId) {
-        Network network = null;           
-
-                User user = new User(userId, clientSocket);
-                
-                network = new Network(user, clientSocket, false);
-                new Thread(network).start();
-
+        User user = new User(userId, clientSocket);
+        Network network = new Network(user, clientSocket, false);
+        new Thread(network).start();
     }
 
 }

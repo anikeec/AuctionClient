@@ -5,7 +5,7 @@
  */
 package com.apu.auctionclient;
 
-import com.apu.auctionclient.client.Client;
+import com.apu.auctionclient.nw.client.Client;
 import com.apu.auctionclient.utils.Log;
 import java.io.IOException;
 import org.apache.commons.lang3.exception.ExceptionUtils;

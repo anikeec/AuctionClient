@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.apu.auctionclient.utils;
+package com.apu.auctionclient.nw.utils;
 
 import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionapi.query.NewRateQuery;

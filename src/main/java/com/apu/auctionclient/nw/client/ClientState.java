@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.apu.auctionclient.client;
+package com.apu.auctionclient.nw.client;
 
 /**
  *
  * @author apu
  */
-public class NewRatesTask {
-    
+public enum ClientState {
+    NOT_CONNECTED,
+    CONNECTED
 }

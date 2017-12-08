@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.apu.auctionclient.controller;
+package com.apu.auctionclient.nw;
 
 import com.apu.auctionapi.answer.AnswerQuery;
 import com.apu.auctionapi.AuctionQuery;
@@ -11,10 +11,10 @@ import com.apu.auctionapi.query.DisconnectQuery;
 import com.apu.auctionapi.query.PingQuery;
 import com.apu.auctionapi.answer.PollAnswerQuery;
 import com.apu.auctionapi.query.RegistrationQuery;
-import com.apu.auctionclient.client.Client;
-import com.apu.auctionclient.client.ClientState;
-import com.apu.auctionclient.entity.User;
-import com.apu.auctionclient.utils.Decoder;
+import com.apu.auctionclient.nw.client.Client;
+import com.apu.auctionclient.nw.client.ClientState;
+import com.apu.auctionclient.nw.entity.User;
+import com.apu.auctionclient.nw.utils.Decoder;
 import com.apu.auctionclient.utils.Log;
 import com.apu.auctionclient.utils.Time;
 import java.io.IOException;

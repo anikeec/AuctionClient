@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.apu.auctionclient.client;
+package com.apu.auctionclient.nw;
 
 import com.apu.auctionapi.AuctionQuery;
-import com.apu.auctionclient.entity.Message;
-import com.apu.auctionclient.utils.Coder;
+import com.apu.auctionclient.nw.entity.Message;
+import com.apu.auctionclient.nw.utils.Coder;
 import com.apu.auctionclient.utils.Log;
 import java.io.BufferedWriter;
 import java.io.IOException;

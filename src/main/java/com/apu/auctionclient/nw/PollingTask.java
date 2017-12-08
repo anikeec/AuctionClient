@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.apu.auctionclient.client;
+package com.apu.auctionclient.nw;
 
 import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionapi.query.PollQuery;
-import com.apu.auctionclient.entity.Message;
-import com.apu.auctionclient.entity.User;
+import com.apu.auctionclient.nw.entity.Message;
+import com.apu.auctionclient.nw.entity.User;
 import com.apu.auctionclient.utils.Log;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
