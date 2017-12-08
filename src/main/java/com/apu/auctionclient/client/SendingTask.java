@@ -51,25 +51,19 @@ public class SendingTask implements Runnable {
                 if(Thread.currentThread().isInterrupted()) {    
                     throw new InterruptedException();
                 }
-//                try {
-                    query = queriesQueue.peek();
-                    if(query == null)   continue;
-                    queriesQueue.remove();
-                    //query = queriesQueue.take();
-                    query.setPacketId(packetId++);
-                    while(sendedQueriesQueue.peek() != null){
-                        if(Thread.currentThread().isInterrupted())     
-                            throw new InterruptedException();
-                    };
-                    sendedQueriesQueue.add(query);
-                    line = Coder.getInstance().code(query);
-                    System.out.println("send:" + line);
-                    out.write(line);
-                    out.flush();                   
-//                } catch (InterruptedException ex) {
-//                    Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
-//                    throw ex;
-//                }
+                query = queriesQueue.peek();
+                if(query == null)   continue;
+                queriesQueue.remove();
+                query.setPacketId(packetId++);
+                while(sendedQueriesQueue.peek() != null){
+                    if(Thread.currentThread().isInterrupted())     
+                        throw new InterruptedException();
+                };
+                sendedQueriesQueue.add(query);
+                line = Coder.getInstance().code(query);
+                System.out.println("send:" + line);
+                out.write(line);
+                out.flush();                   
             }
             System.out.println("Sending thread. Message - Socket closed");
             messagesQueue.add(new Message("Socket closed"));            
