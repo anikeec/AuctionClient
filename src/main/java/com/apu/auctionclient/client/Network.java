@@ -11,13 +11,13 @@ import static com.apu.auctionclient.client.Client.getClientState;
 import com.apu.auctionclient.controller.NetworkController;
 import com.apu.auctionclient.entity.Message;
 import com.apu.auctionclient.entity.User;
+import com.apu.auctionclient.utils.Log;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Timer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  *
@@ -26,6 +26,9 @@ import java.util.logging.Logger;
 public class Network implements Runnable {
     final int QUEUE_SIZE = 10;
     final int MESSAGE_QUEUE_SIZE = 10;
+    
+    private static final Log log = Log.getInstance();
+    private final Class classname = Network.class;
     
     private final Socket socket;
     private final User user;
@@ -68,21 +71,21 @@ public class Network implements Runnable {
     private void stop() throws IOException {        
         try {
             timer.cancel();            
-            System.out.println("Network thread. Timer stopped");
-            System.out.println("Network thread. Sending thread try to interrupt");
+            log.debug(classname, "Network thread. Timer stopped");
+            log.debug(classname, "Network thread. Sending thread try to interrupt");
             sendingThread.interrupt();
-            System.out.println("Network thread. Receiving thread try to interrupt");
+            log.debug(classname, "Network thread. Receiving thread try to interrupt");
             receivingThread.interrupt();
-            System.out.println("Network thread. Sending thread wait");
+            log.debug(classname, "Network thread. Sending thread wait");
             sendingThread.join();
-            System.out.println("Network thread. Sending thread interrupted");
-            System.out.println("Network thread. Receiving thread wait");
+            log.debug(classname, "Network thread. Sending thread interrupted");
+            log.debug(classname, "Network thread. Receiving thread wait");
             receivingThread.join();
-            System.out.println("Network thread. Receiving thread interrupted");
+            log.debug(classname, "Network thread. Receiving thread interrupted");
             socket.close();
-            System.out.println("Network thread. Socket closed");
+            log.debug(classname, "Network thread. Socket closed");
         } catch (InterruptedException ex) {
-            Logger.getLogger(Network.class.getName()).log(Level.SEVERE, null, ex);
+            log.debug(classname,ExceptionUtils.getStackTrace(ex));
         }
     }
     
@@ -115,7 +118,7 @@ public class Network implements Runnable {
                     break;
                 }
             } catch (InterruptedException | IOException ex) {
-                Logger.getLogger(Network.class.getName()).log(Level.SEVERE, null, ex);
+                log.debug(classname,ExceptionUtils.getStackTrace(ex));
             }
         }
     }

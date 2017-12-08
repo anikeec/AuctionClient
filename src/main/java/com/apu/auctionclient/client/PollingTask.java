@@ -9,6 +9,7 @@ import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionapi.query.PollQuery;
 import com.apu.auctionclient.entity.Message;
 import com.apu.auctionclient.entity.User;
+import com.apu.auctionclient.utils.Log;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 
@@ -17,6 +18,9 @@ import java.util.concurrent.BlockingQueue;
  * @author apu
  */
 public class PollingTask extends TimerTask {
+    
+    private static final Log log = Log.getInstance();
+    private final Class classname = PollingTask.class;
     
     private final User user;
     private BlockingQueue<AuctionQuery> queriesQueue;
@@ -36,7 +40,8 @@ public class PollingTask extends TimerTask {
         if(queriesQueue.remainingCapacity() > 0) { 
             queriesQueue.add(new PollQuery(user.getUserId()));
         } else {
-            System.out.println("PollingTask Thread. Queue is full.");
+            log.debug(classname, "PollingTask Thread. Queue is full.");
+            log.debug(classname, "PollingTask Thread. Queue is full.");
             messagesQueue.add(new Message("Error"));
         }
             

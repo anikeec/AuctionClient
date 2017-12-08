@@ -8,12 +8,12 @@ package com.apu.auctionclient.client;
 import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionclient.controller.NetworkController;
 import com.apu.auctionclient.entity.Message;
+import com.apu.auctionclient.utils.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  *
@@ -21,6 +21,8 @@ import java.util.logging.Logger;
  */
 public class ReceivingTask implements Runnable {
     
+    private static final Log log = Log.getInstance();
+    private final Class classname = ReceivingTask.class;
     private final NetworkController networkController;
     private final BlockingQueue<AuctionQuery> sendedQueriesQueue;
     private final BlockingQueue<Message> messagesQueue;
@@ -49,7 +51,7 @@ public class ReceivingTask implements Runnable {
                 byte[] bytes = new byte[1024];
                 while(!socket.isClosed()) {                    
                     if(Thread.currentThread().isInterrupted()) {
-                        System.out.println("Receiving thread. Interrupted.");
+                        log.debug(classname, "Receiving thread. Interrupted.");
                         break;
                     }
                     if(is.available() == 0) continue;
@@ -60,23 +62,23 @@ public class ReceivingTask implements Runnable {
                         line = sb.toString();
                         sb.delete(0, sb.capacity());
                         if(line != null) {
-                            System.out.println(line);
+                            log.debug(classname, line);
                             networkController.handle(line);
                         }
                     }                   
                 }
             } catch (Exception ex) {
-                Logger.getLogger(ReceivingTask.class.getName()).log(Level.SEVERE, null, ex);
-                System.out.println("Receiving thread. Message - Error");
+                log.debug(classname,ExceptionUtils.getStackTrace(ex));
+                log.debug(classname, "Receiving thread. Message - Error");
                 messagesQueue.add(new Message("Error"));                
             } finally { 
                 if(is != null) { 
                     is.close();
-                    System.out.println("Receiving thread. Input socket closed");           
+                    log.debug(classname, "Receiving thread. Input socket closed");           
                 }                    
             }
         } catch (IOException ex) {
-            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);    
+            log.debug(classname,ExceptionUtils.getStackTrace(ex));    
         } 
     }
     

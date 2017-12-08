@@ -15,6 +15,7 @@ import com.apu.auctionclient.client.Client;
 import com.apu.auctionclient.client.ClientState;
 import com.apu.auctionclient.entity.User;
 import com.apu.auctionclient.utils.Decoder;
+import com.apu.auctionclient.utils.Log;
 import com.apu.auctionclient.utils.Time;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
@@ -24,6 +25,9 @@ import java.util.concurrent.BlockingQueue;
  * @author apu
  */
 public class NetworkController {
+    
+    private static final Log log = Log.getInstance();
+    private final Class classname = NetworkController.class;
     
     private final Decoder decoder = Decoder.getInstance();
     
@@ -65,7 +69,7 @@ public class NetworkController {
             if(query.getPacketId() == srcQuery.getPacketId()) {
                 truePacketsValue++;
             }
-            System.out.println(truePacketsValue);
+            log.debug(classname, "" + truePacketsValue);
             removeLastSendedQuery();
         }
     }
@@ -79,17 +83,17 @@ public class NetworkController {
     }
     
     public void handle(AnswerQuery query) {
-        System.out.println("Answer query to controller");
+        log.debug(classname, "Answer query to controller");
         
     }
     
     public void handle(DisconnectQuery query) {
-        System.out.println("Disconnect query to controller");
+        log.debug(classname, "Disconnect query to controller");
         
     }  
     
     public void handle(PingQuery query) throws IOException {
-        System.out.println("Ping query to controller");
+        log.debug(classname, "Ping query to controller");
         
         String time = Time.getTime();
         AnswerQuery answer = 
@@ -98,12 +102,12 @@ public class NetworkController {
     }
     
     public void handle(PollAnswerQuery query) {
-        System.out.println("Poll answer query to controller");
+        log.debug(classname, "Poll answer query to controller");
         
     }
     
     public void handle(RegistrationQuery srcQuery, AnswerQuery answerQuery) {
-        System.out.println("Ask for registration query received");
+        log.debug(classname, "Ask for registration query received");
         Client.setClientState(ClientState.CONNECTED);        
     }
     

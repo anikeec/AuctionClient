@@ -6,6 +6,7 @@
 package com.apu.auctionclient.client;
 
 import com.apu.auctionclient.entity.User;
+import com.apu.auctionclient.utils.Log;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -14,6 +15,8 @@ import java.net.Socket;
  * @author apu
  */
 public class Client {
+    private static final Log log = Log.getInstance();
+    private final Class classname = Client.class;
     private final Socket clientSocket;
     private final String host; 
     
@@ -33,9 +36,9 @@ public class Client {
     }   
 
     public void start() throws IOException {
-            System.out.println("Client started");         
+            log.debug(classname, "Client started");         
             int usedId = 1;
-            System.out.println("Try to connect");
+            log.debug(classname, "Try to connect");
             handleSocket(usedId);               
     }
     

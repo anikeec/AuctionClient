@@ -8,20 +8,23 @@ package com.apu.auctionclient.client;
 import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionclient.entity.Message;
 import com.apu.auctionclient.utils.Coder;
+import com.apu.auctionclient.utils.Log;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  *
  * @author apu
  */
 public class SendingTask implements Runnable {
+    
+    private static final Log log = Log.getInstance();
+    private final Class classname = SendingTask.class;
     
     private final BlockingQueue<AuctionQuery> queriesQueue;
     private final BlockingQueue<AuctionQuery> sendedQueriesQueue;
@@ -61,27 +64,27 @@ public class SendingTask implements Runnable {
                 };
                 sendedQueriesQueue.add(query);
                 line = Coder.getInstance().code(query);
-                System.out.println("send:" + line);
+                log.debug(classname, "send:" + line);
                 out.write(line);
                 out.flush();                   
             }
-            System.out.println("Sending thread. Message - Socket closed");
+            log.debug(classname, "Sending thread. Message - Socket closed");
             messagesQueue.add(new Message("Socket closed"));            
         } catch (IOException ex) {
-            Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Sending thread. Message - Error.");
+            log.debug(classname,ExceptionUtils.getStackTrace(ex));
+            log.debug(classname, "Sending thread. Message - Error.");
             messagesQueue.add(new Message("Error"));            
         } catch (InterruptedException ex) {
-            Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
-            System.out.println("Sending thread. Interrupted.");
+            log.debug(classname,ExceptionUtils.getStackTrace(ex));
+            log.debug(classname, "Sending thread. Interrupted.");
         } finally {            
             try {                
                 if(os != null) {
                     os.close();
-                    System.out.println("Sending thread. Output socket closed");
+                    log.debug(classname, "Sending thread. Output socket closed");
                 }
             } catch (IOException ex) {
-                Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
+                log.debug(classname,ExceptionUtils.getStackTrace(ex));
             }
         }
     }
