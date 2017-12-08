@@ -5,6 +5,7 @@
  */
 package com.apu.auctionclient.utils;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -14,7 +15,8 @@ import java.util.Date;
 public class Time {
     
     public static String getTime() {
-        return new Date().toString();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+        return dateFormat.format(new Date());
     }
     
 }
