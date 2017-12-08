@@ -32,12 +32,11 @@ public class PollingTask extends TimerTask {
     }
 
     @Override
-    public void run() {        
-        AuctionQuery query = new PollQuery(user.getUserId());
-        if(queriesQueue.remainingCapacity() > 0)        
-            queriesQueue.add(query);
-        else {
-            System.out.println("PollingTask Thread. Message - Error");
+    public void run() {       
+        if(queriesQueue.remainingCapacity() > 0) { 
+            queriesQueue.add(new PollQuery(user.getUserId()));
+        } else {
+            System.out.println("PollingTask Thread. Queue is full.");
             messagesQueue.add(new Message("Error"));
         }
             
