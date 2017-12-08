@@ -6,7 +6,6 @@
 package com.apu.auctionclient.nw;
 
 import com.apu.auctionapi.AuctionQuery;
-import com.apu.auctionclient.nw.NetworkController;
 import com.apu.auctionclient.nw.entity.Message;
 import com.apu.auctionclient.utils.Log;
 import java.io.IOException;

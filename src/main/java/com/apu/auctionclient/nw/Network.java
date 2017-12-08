@@ -5,14 +5,10 @@
  */
 package com.apu.auctionclient.nw;
 
-import com.apu.auctionclient.nw.ReceivingTask;
-import com.apu.auctionclient.nw.SendingTask;
-import com.apu.auctionclient.nw.PollingTask;
 import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionapi.query.RegistrationQuery;
 import com.apu.auctionclient.nw.client.ClientState;
 import static com.apu.auctionclient.nw.client.Client.getClientState;
-import com.apu.auctionclient.nw.NetworkController;
 import com.apu.auctionclient.nw.entity.Message;
 import com.apu.auctionclient.nw.entity.User;
 import com.apu.auctionclient.utils.Log;
