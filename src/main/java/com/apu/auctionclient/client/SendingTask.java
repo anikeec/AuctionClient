@@ -48,27 +48,38 @@ public class SendingTask implements Runnable {
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(os));
             String line;
             while(!socket.isClosed()) {
-                if(Thread.currentThread().isInterrupted())    break;
-                try {
-                    query = queriesQueue.take();
+                if(Thread.currentThread().isInterrupted()) {    
+                    throw new InterruptedException();
+                }
+//                try {
+                    query = queriesQueue.peek();
+                    if(query == null)   continue;
+                    queriesQueue.remove();
+                    //query = queriesQueue.take();
                     query.setPacketId(packetId++);
-//                    while(sendedQueriesQueue.peek() != null){};
+                    while(sendedQueriesQueue.peek() != null){
+                        if(Thread.currentThread().isInterrupted())     
+                            throw new InterruptedException();
+                    };
                     sendedQueriesQueue.add(query);
                     line = Coder.getInstance().code(query);
                     System.out.println("send:" + line);
                     out.write(line);
                     out.flush();                   
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
-                    throw ex;
-                }
+//                } catch (InterruptedException ex) {
+//                    Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
+//                    throw ex;
+//                }
             }
             System.out.println("Sending thread. Message - Socket closed");
             messagesQueue.add(new Message("Socket closed"));            
-        } catch (InterruptedException | IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
             System.out.println("Sending thread. Message - Error.");
             messagesQueue.add(new Message("Error"));            
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SendingTask.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Sending thread. Interrupted.");
         } finally {            
             try {                
                 if(os != null) {
