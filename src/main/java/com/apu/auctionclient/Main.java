@@ -15,7 +15,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * @author apu
  */
 public class Main {
-    private static final Log log = Log.getInstance();    
+    
+    private static final Log log = Log.getInstance();
+    private static final Class classname = Main.class;
+    
     static Client client;    
     
     public static void main(String[] args) {
@@ -23,10 +26,11 @@ public class Main {
             if(args.length == 2) {
                 Integer userId = Integer.parseInt(args[0]);
                 Integer lotId = Integer.parseInt(args[1]);
+                log.debug(classname,"UserId = " + userId + ", LotId = " + lotId);
                 Client.getInstance().start(userId, lotId);
-            }            
+            }           
         } catch (IOException ex) {
-            log.debug(Main.class,ExceptionUtils.getStackTrace(ex));
+            log.debug(classname,ExceptionUtils.getStackTrace(ex));
         }
     }
     
