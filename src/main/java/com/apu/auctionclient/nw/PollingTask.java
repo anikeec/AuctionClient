@@ -37,7 +37,7 @@ public class PollingTask extends TimerTask {
 
     @Override
     public void run() {       
-        if(queriesQueue.remainingCapacity() > 0) { 
+        if(queriesQueue.remainingCapacity() > 3) { 
             queriesQueue.add(new PollQuery(user.getUserId()));
         } else {
             log.debug(classname, "PollingTask Thread. Queue is full.");

@@ -5,12 +5,14 @@
  */
 package com.apu.auctionclient.nw;
 
+import com.apu.auctionapi.AuctionLotEntity;
 import com.apu.auctionapi.answer.AnswerQuery;
 import com.apu.auctionapi.AuctionQuery;
 import com.apu.auctionapi.query.DisconnectQuery;
 import com.apu.auctionapi.query.PingQuery;
 import com.apu.auctionapi.answer.PollAnswerQuery;
 import com.apu.auctionapi.query.RegistrationQuery;
+import com.apu.auctionclient.ClientModel;
 import com.apu.auctionclient.nw.client.Client;
 import com.apu.auctionclient.nw.client.ClientState;
 import com.apu.auctionclient.nw.entity.User;
@@ -46,27 +48,31 @@ public class NetworkController {
     }
     
     public void handle(String queryStr) throws IOException, Exception {
-        AuctionQuery query = decoder.decode(queryStr);      
-        AuctionQuery srcQuery = getLastSendedQuery();
+        AuctionQuery answer = decoder.decode(queryStr);      
+        AuctionQuery query = getLastSendedQuery();
+        ClientModel.getInstance()
+                .setAnswerTime(Time.getDelay(query.getTime(), Time.getTime()));//answer.getTime()
         
-        if(query instanceof AnswerQuery) {
-            if(srcQuery instanceof RegistrationQuery) {
-                handle((RegistrationQuery)srcQuery, (AnswerQuery)query);
+        if(answer instanceof AnswerQuery) {
+            if(query instanceof RegistrationQuery) {
+                handle((RegistrationQuery)query, (AnswerQuery)answer);
+            } else if(query instanceof DisconnectQuery) {
+                handle((DisconnectQuery)query, (AnswerQuery)answer);
             } else {
-                handle((AnswerQuery)query);
+                handle((AnswerQuery)answer);
             }
-        } else if(query instanceof DisconnectQuery) {
-            handle((DisconnectQuery)query);
-        } else if(query instanceof PingQuery) { 
-            handle((PingQuery)query);
-        } else if(query instanceof PollAnswerQuery) { 
-            handle((PollAnswerQuery)query);
+        } else if(answer instanceof DisconnectQuery) {
+            handle((DisconnectQuery)answer);
+        } else if(answer instanceof PingQuery) { 
+            handle((PingQuery)answer);
+        } else if(answer instanceof PollAnswerQuery) { 
+            handle((PollAnswerQuery)answer);
         } else {
             
         }        
         
-        if(srcQuery != null) {
-            if(query.getPacketId() == srcQuery.getPacketId()) {
+        if(query != null) {
+            if(answer.getPacketId() == query.getPacketId()) {
                 truePacketsValue++;
             }
             log.debug(classname, "" + truePacketsValue);
@@ -102,13 +108,35 @@ public class NetworkController {
     }
     
     public void handle(PollAnswerQuery query) {
-        log.debug(classname, "Poll answer query to controller");
-        
+        ClientModel model = ClientModel.getInstance();
+        if(query.getAuctionLots().size() > 0) {
+            AuctionLotEntity lotEntity = query.getAuctionLots().get(0);
+            model.setLotId(lotEntity.getLotId());
+            model.setLotName(lotEntity.getLotName());
+            model.setStartPrice(lotEntity.getStartPrice());        
+            model.setCurrentRate(lotEntity.getLastRate()); 
+            model.setCurrentWinner("" + lotEntity.getLastRateUserId());
+            model.setAmountObservers(lotEntity.getAmountObservers());
+        } else {
+            model.setLotId(0);            
+            model.setLotName("");
+            model.setStartPrice(0);
+            model.setCurrentRate(model.getStartPrice());        
+            model.setCurrentWinner("0");
+            model.setAmountObservers(0);
+        }
+        model.setLastTimeUpdate(query.getTime());
+        log.debug(classname, "Poll answer query to controller");        
     }
     
     public void handle(RegistrationQuery srcQuery, AnswerQuery answerQuery) {
-        log.debug(classname, "Ask for registration query received");
+        log.debug(classname, "Answer for registration query received");
         Client.setClientState(ClientState.CONNECTED);        
+    }
+    
+    public void handle(DisconnectQuery srcQuery, AnswerQuery answerQuery) {
+        log.debug(classname, "Answer for disconnect query received");
+        Client.setClientState(ClientState.DISCONNECTED);
     }
     
 }

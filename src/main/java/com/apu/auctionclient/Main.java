@@ -16,14 +16,15 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  */
 public class Main {
     private static final Log log = Log.getInstance();    
-    private static final int CONNECTION_PORT = 5050;
-    private static final String CONNECTION_HOST = "localhost";
     static Client client;    
     
     public static void main(String[] args) {
         try {
-            client = new Client(CONNECTION_HOST, CONNECTION_PORT);
-            client.start();
+            if(args.length == 2) {
+                Integer userId = Integer.parseInt(args[0]);
+                Integer lotId = Integer.parseInt(args[1]);
+                Client.getInstance().start(userId, lotId);
+            }            
         } catch (IOException ex) {
             log.debug(Main.class,ExceptionUtils.getStackTrace(ex));
         }
