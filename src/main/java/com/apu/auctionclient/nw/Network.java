@@ -29,7 +29,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  */
 public class Network implements Runnable {
     final int QUEUE_SIZE = 10;
-    
+    final int POLLING_PERIOD_MS = 200;
+    final int POLLING_START_DELAY = 500;
     
     private static final Log log = Log.getInstance();
     private final Class classname = Network.class;
@@ -146,7 +147,7 @@ public class Network implements Runnable {
         PollingTask pollingTask = new PollingTask(user, messagesQueue);
         this.timer = new Timer(false);//run not as daemon
         pollingTask.setQueriesQueue(queriesQueue);
-        timer.scheduleAtFixedRate(pollingTask, 1000, 200);
+        timer.scheduleAtFixedRate(pollingTask, POLLING_START_DELAY, POLLING_PERIOD_MS);
         
         while(true) {
             try {
