@@ -18,7 +18,6 @@ import com.apu.auctionclient.nw.entity.User;
 import com.apu.auctionclient.utils.Log;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Timer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -29,8 +28,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  */
 public class Network implements Runnable {
     final int QUEUE_SIZE = 10;
-    final int POLLING_PERIOD_MS = 200;
-    final int POLLING_START_DELAY = 500;
     
     private static final Log log = Log.getInstance();
     private final Class classname = Network.class;
@@ -42,7 +39,8 @@ public class Network implements Runnable {
     private BlockingQueue<AuctionQuery> sendedQueriesQueue; 
     private BlockingQueue<Message> messagesQueue;
     
-    private Timer timer;
+//    private Timer timer;
+    private Thread pollingThread;
     private Thread sendingThread;
     private Thread receivingThread;
 
@@ -92,7 +90,7 @@ public class Network implements Runnable {
     }
     
     private void stopPolling() {
-        timer.cancel();            
+//        timer.cancel();            
             log.debug(classname, "Network thread. Timer stopped");
     }
     
@@ -145,9 +143,10 @@ public class Network implements Runnable {
         while(getClientState() == ClientState.NOT_CONNECTED) {};
 
         PollingTask pollingTask = new PollingTask(user, messagesQueue);
-        this.timer = new Timer(false);//run not as daemon
+        pollingThread = new Thread(pollingTask);
+        pollingThread.setDaemon(true);
         pollingTask.setQueriesQueue(queriesQueue);
-        timer.scheduleAtFixedRate(pollingTask, POLLING_START_DELAY, POLLING_PERIOD_MS);
+        pollingThread.start();
         
         while(true) {
             try {

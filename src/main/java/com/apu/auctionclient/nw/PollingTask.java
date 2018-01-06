@@ -10,14 +10,14 @@ import com.apu.auctionapi.query.PollQuery;
 import com.apu.auctionclient.nw.entity.Message;
 import com.apu.auctionclient.nw.entity.User;
 import com.apu.auctionclient.utils.Log;
-import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  *
  * @author apu
  */
-public class PollingTask extends TimerTask {
+public class PollingTask implements Runnable {
     
     private static final Log log = Log.getInstance();
     private final Class classname = PollingTask.class;
@@ -36,14 +36,21 @@ public class PollingTask extends TimerTask {
     }
 
     @Override
-    public void run() {       
-        if(queriesQueue.remainingCapacity() > 0) { 
+    public void run() {
+        while(true) {
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException ex) {
+            log.debug(classname,ExceptionUtils.getStackTrace(ex));
+        }
+        if(queriesQueue.remainingCapacity() > queriesQueue.size() - 1) { 
             queriesQueue.add(new PollQuery(user.getUserId()));
+            log.debug(classname, "PollingTask Thread. Put to queue.");
         } else {
             log.debug(classname, "PollingTask Thread. Queue is full.");
 //            messagesQueue.add(new Message("Error"));
         }
-            
+        }   
     }   
     
     
