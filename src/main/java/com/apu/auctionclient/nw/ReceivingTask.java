@@ -50,7 +50,7 @@ public class ReceivingTask implements Runnable {
                 byte[] bytes = new byte[1024];
                 while(!socket.isClosed()) {
                     try {
-                        Thread.sleep(5);
+                        Thread.sleep(1);
                     } catch(InterruptedException ex) {
                         log.debug(classname, "Thread sleep is interrupted.");
                         break;
@@ -61,7 +61,9 @@ public class ReceivingTask implements Runnable {
                     }
 //                    if(is.available() == 0) continue;
                     try {
+//                        log.debug(classname, "Try to read.");
                         amount = is.read(bytes, 0, 1024);
+                        log.debug(classname, "Read bytes. Amount: " + amount);
                     } catch (SocketTimeoutException ex) {
                         continue;
                     }

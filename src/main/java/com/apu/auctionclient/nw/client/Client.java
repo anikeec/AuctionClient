@@ -25,7 +25,7 @@ public class Client {
     private static Network network;
     private static final int CONNECTION_PORT = 5050;
     private static final String CONNECTION_HOST = "127.0.0.1";
-    private final int SOCKET_RECEIVE_TIMEOUT = 1000;
+    private final int SOCKET_RECEIVE_TIMEOUT = 5;
     final int MESSAGE_QUEUE_SIZE = 10;
     private BlockingQueue<Message> messagesQueue = new ArrayBlockingQueue<>(MESSAGE_QUEUE_SIZE);
     private Thread networkThread;
@@ -55,6 +55,8 @@ public class Client {
     public void start(int userId, int lotId) throws IOException {
         clientState = ClientState.NOT_CONNECTED;
         messagesQueue.clear();
+        log.debug(classname, "Client. Server: " + CONNECTION_HOST + 
+                ", Port: " + CONNECTION_PORT);
         clientSocket = new Socket(CONNECTION_HOST, CONNECTION_PORT);
         clientSocket.setSoTimeout(SOCKET_RECEIVE_TIMEOUT);
         log.debug(classname, "Client started");         
