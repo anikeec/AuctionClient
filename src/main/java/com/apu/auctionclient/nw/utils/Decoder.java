@@ -95,7 +95,6 @@ public class Decoder {
                                         amountObservers);
             result.addLotToCollection(lot);
         }
-        log.debug(classname, "");
     }
     
     public AuctionQuery decode(String query) throws Exception {
